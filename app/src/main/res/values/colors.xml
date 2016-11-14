@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="white">#ffffff</color>
+    <color name="base_actionbar_bg">#6889ff</color>
+    <color name="transparent">#000000</color>
+    <color name="edit">#eeeeee</color>
+    <color name="grey">#e0e0e0</color>
+    <color name="item">#fffde7</color>
+    <color name="gold">#ffab00</color>
+    <color name="button">#03a9f4</color>
+    <color name="button2">#81d4fa</color>
+
+    <color name="base_color_text_black">#3e3e39</color>
+</resources>

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_marginBottom="8dp"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:background="@drawable/bg_item"
+        android:orientation="vertical"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+    <RelativeLayout
+        android:id="@+id/rl_icon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/iv_icon"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/icon1"
+            android:background="@drawable/bg_iv"/>
+        <TextView
+            android:id="@+id/tv_nick"
+            android:layout_toRightOf="@+id/iv_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/gold"
+            android:textSize="19sp"
+            android:text="nick"/>
+        <TextView
+            android:id="@+id/tv_datetime"
+            android:layout_toRightOf="@+id/iv_icon"
+            android:layout_alignParentBottom="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="current time"
+            />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:textSize="20sp"
+        android:textColor="@color/colorPrimary"
+        android:text="标题"/>
+
+    <RelativeLayout
+        android:layout_marginTop="3dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        <TextView
+            android:id="@+id/tv_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="15dp"
+            android:textColor="@color/transparent"
+            android:textSize="18sp"
+            android:text="始发地"/>
+
+        <TextView
+            android:layout_toRightOf="@+id/tv_start"
+            android:layout_toLeftOf="@+id/destination"
+            android:layout_width="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_height="15dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:background="@drawable/direction"
+
+            />
+
+        <TextView
+            android:id="@+id/destination"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="15dp"
+            android:textSize="18sp"
+            android:textColor="@color/transparent"
+            android:text="目的地"/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_description"
+        android:layout_marginTop="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:textColor="@color/transparent"
+        android:text="秋名山怎么走"/>
+
+    <TextView
+        android:id="@+id/tv_time"
+        android:layout_marginTop="5dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:textSize="15sp"
+        android:textColor="@color/transparent"
+        android:text="明天下午四时出发"/>
+    <LinearLayout
+        android:layout_gravity="right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/tv_contact"
+        android:text="联系他"
+        android:layout_marginRight="10dp"
+        android:paddingTop="8dp"
+        android:textSize="18sp"
+        android:textColor="@color/colorAccent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/tv_phone"
+            android:text="13966296789"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/btn_call"
+            android:layout_width="52dp"
+            android:layout_height="40dp"
+            android:layout_marginRight="15dp"
+            android:descendantFocusability="blocksDescendants"
+            android:background="@drawable/image_phone"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_marginTop="5dp"
+        android:layout_width="match_parent"
+        android:background="@color/grey"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="25dp"
+            android:layout_height="35dp"
+            android:background="@drawable/ic_location"/>
+
+        <TextView
+            android:id="@+id/tv_location"
+            android:layout_marginLeft="3dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:textSize="15sp"
+            android:text="发布时位置"
+            android:maxLines="1"
+            />
+
+    </LinearLayout>
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:background="#00ffffff"/>
+</LinearLayout>

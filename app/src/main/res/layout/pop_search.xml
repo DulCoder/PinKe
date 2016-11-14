@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/transparent"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/btn_search_all"
+        style="@style/Smile.TextView._Black"
+        android:layout_width="match_parent"
+        android:background="@drawable/base_pop_bg_selector"
+        android:padding = "10dp"
+        android:gravity="center"
+        android:text="Search All" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@drawable/base_horizontal_line" >
+    </View>
+
+    <Button
+        android:id="@+id/btn_fare"
+        style="@style/Smile.TextView._Black"
+        android:layout_width="match_parent"
+        android:background="@drawable/base_pop_bg_selector"
+        android:padding = "10dp"
+        android:gravity="center"
+        android:text="Search Fare" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@drawable/base_horizontal_line" >
+    </View>
+
+    <Button
+        android:id="@+id/btn_car"
+        style="@style/Smile.TextView._Black"
+        android:padding="10dp"
+        android:layout_width="match_parent"
+        android:background="@drawable/base_pop_bg_selector"
+        android:gravity="center"
+        android:text="Search Car" />
+
+</LinearLayout>
