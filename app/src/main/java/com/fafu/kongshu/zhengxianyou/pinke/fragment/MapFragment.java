@@ -18,6 +18,7 @@ import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.TextureMapView;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.utils.CoordinateConverter;
 import com.fafu.kongshu.zhengxianyou.pinke.DisplayActivity;
 import com.fafu.kongshu.zhengxianyou.pinke.R;
 import com.fafu.kongshu.zhengxianyou.pinke.bean.Note;
@@ -33,7 +34,9 @@ public class MapFragment extends Fragment {
     private View mView;
     private TextureMapView mMapView = null;
     private BaiduMap mBaiduMap;
-    private LatLng myLocation = new LatLng(Config.getLatitude(), Config.getLongitude());
+    private LatLng amapLocation = new LatLng(Config.getLatitude(), Config.getLongitude());
+
+
     private View pop;
     private TextView tv;
     private DisplayActivity mDisplayActivity;
@@ -59,13 +62,20 @@ public class MapFragment extends Fragment {
         Config.setIsMapFragmentAlive(true);
         mDisplayActivity.setHandler(4);
 
+          //坐标转换
+        CoordinateConverter converter = new CoordinateConverter();
+        converter.from(CoordinateConverter.CoordType.COMMON);
+        converter.coord(amapLocation);
+        LatLng bmapLocation = converter.convert();
+
         //获取地图控件引用
         mMapView = (TextureMapView) mView.findViewById(R.id.bmapView);
         mBaiduMap = mMapView.getMap();
         //设置地图中心点及地图缩放大小，数值越大现实的范围越小越详细，默认为13(2公里)
-        MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.newLatLngZoom(myLocation, 13);
+        MapStatusUpdate mapStatusUpdate = MapStatusUpdateFactory.newLatLngZoom(bmapLocation, 13);
         mBaiduMap.setMapStatus(mapStatusUpdate);
         Log.e("test", "map onCreateView");
+
 
         initMarker();
         initListener();

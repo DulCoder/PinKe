@@ -2,8 +2,10 @@ package com.fafu.kongshu.zhengxianyou.pinke.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -12,14 +14,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.fafu.kongshu.zhengxianyou.pinke.DisplayActivity;
+import com.fafu.kongshu.zhengxianyou.pinke.PinKeApplication;
 import com.fafu.kongshu.zhengxianyou.pinke.R;
+import com.fafu.kongshu.zhengxianyou.pinke.adapter.DatabaseAdapter;
 import com.fafu.kongshu.zhengxianyou.pinke.adapter.NoteAdapter;
 import com.fafu.kongshu.zhengxianyou.pinke.bean.MyUser;
 import com.fafu.kongshu.zhengxianyou.pinke.bean.Note;
 import com.fafu.kongshu.zhengxianyou.pinke.config.Config;
+import com.fafu.kongshu.zhengxianyou.pinke.sqlitedb.NoteMeteData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,23 +34,31 @@ import cn.bmob.v3.exception.BmobException;
 import cn.bmob.v3.listener.FindListener;
 import cn.bmob.v3.listener.UpdateListener;
 
+import static com.fafu.kongshu.zhengxianyou.pinke.PinKeApplication.editor;
+
 /**
  * Created by zhengxianyou on 2016/10/30.
  */
 
-public class MyContentFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class MyContentFragment extends Fragment implements AdapterView.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
     private DisplayActivity displayActivity;
     private View mView;
 
     private ListView mListView;
     private List<Note> notes = new ArrayList<>();
     private NoteAdapter adapter;
+    private DatabaseAdapter mDatabaseAdapter;
 
     private static final int DEL_ITEM = 0x1;
+    private boolean isNeedRefresh = false;             //是否需要刷新
+    private String objectId = null;
+    private SwipeRefreshLayout mSwipeLayout;
+    private static final int REFRESH_COMPLETE = 0X100;
+
 
     /**
-    *返回创建fragment实例
-    */
+     * 返回创建fragment实例
+     */
     public static MyContentFragment newInstance() {
         MyContentFragment myContentFragment = new MyContentFragment();
         return myContentFragment;
@@ -59,34 +71,44 @@ public class MyContentFragment extends Fragment implements AdapterView.OnItemCli
         Log.e("test", "My onAttach");
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.e("test", "My onCreate");
+    /**
+     * 异步刷新页面
+     */
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case REFRESH_COMPLETE:
+                    loadData();
+                    mSwipeLayout.setRefreshing(false);
+                    break;
 
-    }
+            }
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        if (Config.getMyContentFragmentView() == null) {
-            mView = inflater.inflate(R.layout.fragment_content_my, container, false);
+        mView = inflater.inflate(R.layout.fragment_content_my, container, false);
+        mDatabaseAdapter = new DatabaseAdapter(displayActivity);
 
-            adapter = new NoteAdapter(displayActivity, notes);
-            Log.e("test", "My createView");
+        adapter = new NoteAdapter(displayActivity, notes);
+        Log.e("test", "My createView");
 
-            displayActivity.setHandler(3);
+        displayActivity.setHandler(3);
 
+        initView();
 
+        isNeedRefresh = PinKeApplication.sp.getBoolean("isNeedRefresh", true);
+        if (isNeedRefresh) {
             loadData();
-            initView();
-            loadData();
-        }else {
-            Log.e("test", "My no no no createView");
-
-            mView = Config.getMyContentFragmentView();
-            displayActivity.setHandler(3);
-
+            editor.putBoolean("isNeedRefresh", false);
+            editor.commit();
+        } else {
+            nativeData();
         }
+
         return mView;
     }
 
@@ -94,63 +116,86 @@ public class MyContentFragment extends Fragment implements AdapterView.OnItemCli
     public void onResume() {
         super.onResume();
         Config.setIsMyContentFragmentAlive(true);
-
-        Log.e("test","My resume");
-
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.e("test","My pause");
+        Log.e("test", "My resume");
 
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Config.setMyContentFragmentView(mView);
-        Log.e("test","My destroy");
-
-    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         Config.setIsMyContentFragmentAlive(false);
-        Config.setMyContentFragmentView(mView);
-        Log.e("test","My onDestroyView");
-
-    }
-
-    private void initView() {
-        mListView = (ListView)mView.findViewById(R.id.note_listView);
-        mListView.setOnItemClickListener(this);   //给ListView注册监听事件
-        registerForContextMenu(mListView);        //给ListView注册上下文菜单
+        Log.e("test", "My onDestroyView");
 
     }
 
     /**
-     * 加载数据
+     * 初始化view
+     */
+    private void initView() {
+        mListView = (ListView) mView.findViewById(R.id.note_listView);
+        mListView.setOnItemClickListener(this);   //给ListView注册监听事件
+        registerForContextMenu(mListView);        //给ListView注册上下文菜单
+
+        mSwipeLayout = (SwipeRefreshLayout) mView.findViewById(R.id.id_swipe_ly);
+        mSwipeLayout.setOnRefreshListener(this);
+        mSwipeLayout.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,
+                android.R.color.holo_orange_light, android.R.color.holo_red_light);
+
+    }
+
+    /**
+     * 加载网络数据
      */
     private void loadData() {
-        MyUser user = BmobUser.getCurrentUser(MyUser.class);
-        BmobQuery<Note> query = new BmobQuery<>();
-        query.setLimit(150);
-        query.addWhereEqualTo("author",user);     //查找当前用户发布的消息
-        query.order("-updatedAt");
+        try {
+            MyUser user = BmobUser.getCurrentUser(MyUser.class);
+            BmobQuery<Note> query = new BmobQuery<>();
+            query.setLimit(150);
+            query.addWhereEqualTo("author", user);     //查找当前用户发布的消息
+            query.order("-updatedAt");
 
-        query.findObjects(new FindListener<Note>() {
+            query.findObjects(new FindListener<Note>() {
 
-            @Override
-            public void done(List<Note> list, BmobException e) {
+                @Override
+                public void done(List<Note> list, BmobException e) {
 
-                notes = list;
-                adapter = new NoteAdapter(displayActivity,notes);
-                mListView.setAdapter(adapter);
-            }
-        });
+                    notes = list;
+
+                    //把数据添加到本地数据库
+                    int size = list.size();
+                    Note note = null;
+                    for (int i = 0; i < size; i++) {
+                        note = list.get(i);
+                        mDatabaseAdapter.rawAdd(note, NoteMeteData.MyNoteTable.TABLE_NAME);
+                    }
+
+                    nativeData();
+
+//                    adapter = new NoteAdapter(displayActivity, notes);
+//                    mListView.setAdapter(adapter);
+                }
+            });
+        } catch (Exception e) {
+            nativeData();
+        }
     }
+
+    /**
+     * 本地加载数据
+     */
+    private void nativeData() {
+
+        notes.clear();
+        ArrayList<Note> list = mDatabaseAdapter.queryAll();
+        notes.addAll(list);
+
+        adapter = new NoteAdapter(displayActivity, notes);
+        mListView.setAdapter(adapter);
+
+        Log.e("test", "nativeData");
+    }
+
 
     /**
      * 上下文菜单，长按删除item
@@ -158,26 +203,31 @@ public class MyContentFragment extends Fragment implements AdapterView.OnItemCli
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(1,DEL_ITEM,100,"删除");
+        menu.add(1, DEL_ITEM, 100, "删除");
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case DEL_ITEM:
 
                 AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-                View view = info.targetView;  //得到被点击的view
-                String objectId = (String) view.getTag();//获取到被点击item的数据id
+                int position = info.position;               //得到被点击的item
+                Note note = notes.get(position);
+                objectId = note.getNoteId();
 
-                Note note = new Note();
-                note.delete(objectId,new UpdateListener(){
+                note.delete(objectId, new UpdateListener() {
 
                     @Override
                     public void done(BmobException e) {
-                        loadData();            //删除数据后更新界面
+                        mDatabaseAdapter.delete(objectId);
+                        nativeData();
+                        Config.setIsRefresh(true);
+
                     }
+
                 });
+
                 break;
         }
         return true;
@@ -189,33 +239,34 @@ public class MyContentFragment extends Fragment implements AdapterView.OnItemCli
      */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        String objectId, title, start, end, description, time, phone;
+        Note note = notes.get(position);
         try {
 
-        TextView tv_title = (TextView) view.findViewById(R.id.tv_title);
-        TextView tv_start = (TextView) view.findViewById(R.id.tv_start);
-        TextView tv_end = (TextView) view.findViewById(R.id.destination);
-        TextView tv_time = (TextView) view.findViewById(R.id.tv_time);
-        TextView tv_description = (TextView) view.findViewById(R.id.tv_description);
-        TextView tv_phone = (TextView) view.findViewById(R.id.tv_phone);
+            objectId = note.getNoteId();
 
-        String objectId = (String) view.getTag();                    //获取objectId
-        String title = tv_title.getText().toString();                //获取标题关键字
-        String start = tv_start.getText().toString();                //获取起点
-        String end = tv_end.getText().toString();                    //获取目的地
-        String description = tv_description.getText().toString();    //获取item内容
-        String time = tv_time.getText().toString();                  //获取出发时间
-        String phone = tv_phone.getText().toString();                //获取出发时间
+            //获取objectId
+            title = note.getTitle();                         //获取标题关键字
+            start = note.getOrigin();                        //获取起点
+            end = note.getDestination();                     //获取目的地
+            description = note.getContent();                 //获取item内容
+            time = note.getTime();                           //获取出发时间
+            phone = note.getPhoneNumber();                   //获取联系方式
 
+            getFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, MyDetailFragment.newInstance(objectId, title, start, end, description, time, phone))
+                    .commit();
+        } catch (Exception e) {
 
-         getFragmentManager()
-                 .beginTransaction()
-                 .replace(R.id.fragment_container,MyDetailFragment.newInstance(objectId,title,start,end,description,time,phone))
-                 .addToBackStack(null)
-                 .commit();
-        }catch (Exception e){
-
-            Log.e("TAG",e.getMessage().toString());
+            Log.e("TAG", e.getMessage().toString());
         }
 
+    }
+
+
+    @Override
+    public void onRefresh() {
+        handler.sendEmptyMessageDelayed(REFRESH_COMPLETE, 2000);
     }
 }

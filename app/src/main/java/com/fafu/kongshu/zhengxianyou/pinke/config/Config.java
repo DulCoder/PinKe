@@ -1,7 +1,5 @@
 package com.fafu.kongshu.zhengxianyou.pinke.config;
 
-import android.view.View;
-
 import com.fafu.kongshu.zhengxianyou.pinke.bean.Note;
 
 import java.util.ArrayList;
@@ -16,13 +14,22 @@ public class Config {
     private static boolean isDisplayFragmentAlive ;                  //判断DisplayFragment是否存活
     private static boolean isMyContentFragmentAlive;                 //判断MyContentFragment是否存活
     private static boolean isMapFragmentAlive;                       //判断MapFragment是否存活
+    private static boolean isRefresh;                                //判断是否需要刷新
+    private static String name;                                       //保存昵用户名
     private static String nickName;                                  //保存昵称
     private static String myIcon;                                    //保存头像信息
     private static String tempLocation;                              //临时存储位置
     private static Double latitude;                                  //当前纬度
     private static Double longitude;                                 //当前经度
     private static List<Note> list = new ArrayList<>();              //保存显示加载的note数据
-    private static View myContentFragmentView;                       //保存MyContentFragment的View
+
+    public static String getName() {
+        return name;
+    }
+
+    public static void setName(String name) {
+        Config.name = name;
+    }
 
     public static boolean isMapFragmentAlive() {
         return isMapFragmentAlive;
@@ -32,12 +39,12 @@ public class Config {
         Config.isMapFragmentAlive = isMapFragmentAlive;
     }
 
-    public static View getMyContentFragmentView() {
-        return myContentFragmentView;
+    public static boolean isRefresh() {
+        return isRefresh;
     }
 
-    public static void setMyContentFragmentView(View myContentFragmentView) {
-        Config.myContentFragmentView = myContentFragmentView;
+    public static void setIsRefresh(boolean isRefresh) {
+        Config.isRefresh = isRefresh;
     }
 
     public static Double getLatitude() {
@@ -96,7 +103,6 @@ public class Config {
         Config.nickName = nickName;
     }
 
-
     public static boolean isDisplayFragmentAlive() {
         return isDisplayFragmentAlive;
     }
@@ -104,5 +110,6 @@ public class Config {
     public static void setIsDisplayFragmentAlive(boolean isDisplayFragmentAlive) {
         Config.isDisplayFragmentAlive = isDisplayFragmentAlive;
     }
+
 
 }

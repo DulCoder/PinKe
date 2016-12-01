@@ -27,12 +27,12 @@ public class DisplayActivity extends AppCompatActivity implements View.OnClickLi
     //声明AMapLocationClient类对象
     public AMapLocationClient mLocationClient = null;
     //声明定位回调监听器
+
     public AMapLocationListener mLocationListener = new AMapLocationListener() {
         @Override
         public void onLocationChanged(AMapLocation amapLocation) {
             if (amapLocation != null) {
                 if (amapLocation.getErrorCode() == 0) {
-//                    Note note = new Note();
                     double latitude = amapLocation.getLatitude();
                     double longitude = amapLocation.getLongitude();
                     String tempLocation = amapLocation.getCity() + amapLocation.getDistrict() + amapLocation.getStreet();
@@ -92,6 +92,7 @@ public class DisplayActivity extends AppCompatActivity implements View.OnClickLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display);
+        Config.setIsRefresh(true);                   //设置需要刷新
         Config.setIsDisplayFragmentAlive(true);      //设置DisplayFragment的生命状态为激活
         Config.setIsMyContentFragmentAlive(false);   //设置MyContentFragment的生命状态为未激活
         Config.setIsMapFragmentAlive(false);         //设置MapFragment的生命状态为未激活
@@ -117,15 +118,24 @@ public class DisplayActivity extends AppCompatActivity implements View.OnClickLi
         //启动定位
         mLocationClient.startLocation();
 
+        String name = getIntent().getStringExtra("name");
         String icon = getIntent().getStringExtra("icon");
         String nickName = getIntent().getStringExtra("nickName");
+        Config.setName(name);
         Config.setMyIcon(icon);
         Config.setNickName(nickName);
+
+
 
         addFragment();
         initView();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
 
     /**
      * 填充Fragment

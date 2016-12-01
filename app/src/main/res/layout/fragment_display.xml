@@ -8,9 +8,13 @@
     >
     <include layout="@layout/include_action_bar" />
 
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/id_swipe_ly"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <ListView
         android:id="@+id/display_listView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"></ListView>
-
+    </android.support.v4.widget.SwipeRefreshLayout>
 </LinearLayout>

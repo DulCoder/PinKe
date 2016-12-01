@@ -16,9 +16,11 @@ import android.widget.Spinner;
 
 import com.fafu.kongshu.zhengxianyou.pinke.DisplayActivity;
 import com.fafu.kongshu.zhengxianyou.pinke.R;
+import com.fafu.kongshu.zhengxianyou.pinke.adapter.DatabaseAdapter;
 import com.fafu.kongshu.zhengxianyou.pinke.bean.MyUser;
 import com.fafu.kongshu.zhengxianyou.pinke.bean.Note;
 import com.fafu.kongshu.zhengxianyou.pinke.config.Config;
+import com.fafu.kongshu.zhengxianyou.pinke.sqlitedb.NoteMeteData;
 import com.fafu.kongshu.zhengxianyou.pinke.utils.Utils;
 
 import java.text.DateFormat;
@@ -46,6 +48,7 @@ public class AddFragment extends Fragment implements View.OnClickListener, Adapt
     private String currentLocation;
     private Double latitude, longitude;
     private static DisplayActivity sMDisplayActivity = new DisplayActivity();
+    private DatabaseAdapter mDatabaseAdapter;
 
     /**
      * 返回创建fragment实例
@@ -64,6 +67,7 @@ public class AddFragment extends Fragment implements View.OnClickListener, Adapt
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.fragment_add, container, false);
+        mDatabaseAdapter = new DatabaseAdapter(displayActivity);
 
         sMDisplayActivity.setHandler(0);           //更改宿主Activity的UI，隐藏底部导航栏
         currentLocation = Config.getTempLocation().toString();
@@ -112,53 +116,62 @@ public class AddFragment extends Fragment implements View.OnClickListener, Adapt
         switch (v.getId()) {
 
             case R.id.btn_save:           //保存数据后退出本界面
-                Date date = new Date();
-                DateFormat format = DateFormat.getDateTimeInstance();
-                String datetime = format.format(date);            //获取当前时间
 
-                String origin = et_start.getText().toString();
-                String end = et_end.getText().toString();
-                String time = et_time.getText().toString();
-                String content = et_description.getText().toString();
-                String phone = et_phone.getText().toString();
-                String icon = Config.getMyIcon();
-                String nickName = Config.getNickName();
-                Log.e("DATE", datetime + nickName + icon);
-                if (!TextUtils.isEmpty(content) && !TextUtils.isEmpty(origin) && !TextUtils.isEmpty(end) && !TextUtils.isEmpty(time) && phone.length() == 11) {
-                    MyUser user = BmobUser.getCurrentUser(MyUser.class);
-                    Note note = new Note();
-                    note.setTitle(choice);
-                    note.setContent(content);
-                    note.setOrigin(origin);
-                    note.setDestination(end);
-                    note.setTime(time);
-                    note.setPhoneNumber(phone);
-                    note.setCurrentLocation(currentLocation);
-                    note.setDatetime(datetime);
-                    note.setMyIcon(icon);
-                    note.setNickName(nickName);
-                    note.setLatitude(latitude);
-                    note.setLongitude(longitude);
-                    note.setAuthor(user);                             //设置作者字段以便查询
-
-                    note.save(new SaveListener<String>() {
-                        @Override
-                        public void done(String s, BmobException e) {
-                            Config.setMyContentFragmentView(null);
-                            goBack();
-                        }
-                    });
-                } else {
-                    Utils.toast(displayActivity, "请把信息填写完整");
-                }
-
+                save();
                 break;
 
-            case R.id.btn_cancel:                                      //取消退出本界面
+            case R.id.btn_cancel:         //取消退出本界面
                 goBack();
                 break;
 
         }
+    }
+
+    private void save() {
+        Date date = new Date();
+        DateFormat format = DateFormat.getDateTimeInstance();
+        String datetime = format.format(date);            //获取当前时间
+
+        String origin = et_start.getText().toString();
+        String end = et_end.getText().toString();
+        String time = et_time.getText().toString();
+        String content = et_description.getText().toString();
+        String phone = et_phone.getText().toString();
+        String icon = Config.getMyIcon();
+        String nickName = Config.getNickName();
+        Log.e("DATE", datetime + nickName + icon);
+        if (!TextUtils.isEmpty(content) && !TextUtils.isEmpty(origin) && !TextUtils.isEmpty(end) && !TextUtils.isEmpty(time) && phone.length() == 11) {
+            MyUser user = BmobUser.getCurrentUser(MyUser.class);
+            final Note note = new Note();
+            note.setTitle(choice);
+            note.setContent(content);
+            note.setOrigin(origin);
+            note.setDestination(end);
+            note.setTime(time);
+            note.setPhoneNumber(phone);
+            note.setCurrentLocation(currentLocation);
+            note.setDatetime(datetime);
+            note.setMyIcon(icon);
+            note.setNickName(nickName);
+            note.setLatitude(latitude);
+            note.setLongitude(longitude);
+            note.setAuthor(user);                             //设置作者字段以便查询
+try {
+    note.save(new SaveListener<String>() {
+        @Override
+        public void done(String s, BmobException e) {
+mDatabaseAdapter.rawAdd(note, NoteMeteData.MyNoteTable.TABLE_NAME);
+            Config.setIsRefresh(true);
+            goBack();
+        }
+    });
+}catch (Exception e){
+
+}
+        } else {
+            Utils.toast(displayActivity, "请把信息填写完整");
+        }
+
     }
 
     /**

@@ -27,6 +27,7 @@ import static com.fafu.kongshu.zhengxianyou.pinke.R.id.iv_icon;
 public class DisplayAdapter extends BaseAdapter implements View.OnClickListener {
     private List<Note> mList;
     private Context mContext;
+    private String title,origin,destination,time,datetime,currentLocation,phoneNumber,content,myIcon,nickName;
 
 
     public DisplayAdapter(Context context, List<Note> list) {
@@ -34,8 +35,6 @@ public class DisplayAdapter extends BaseAdapter implements View.OnClickListener 
         mList = list;
     }
 
-//    public DisplayAdapter(DisplayActivity displayActivity, List<Note> notes, DisplayFragment displayFragment) {
-//    }
 
     @Override
     public int getCount() {
@@ -77,17 +76,29 @@ public class DisplayAdapter extends BaseAdapter implements View.OnClickListener 
 //        }
 //        viewHolder = (ViewHolder) convertView.getTag();
         final Note note = mList.get(position);
+
         try {
-            viewHolder.tv_description.setText(note.getContent());
-            viewHolder.tv_title.setText(note.getTitle());
-            viewHolder.tv_start.setText(note.getOrigin());
-            viewHolder.tv_end.setText(note.getDestination());
-            viewHolder.tv_time.setText(note.getTime());
-            viewHolder.tv_phone.setText(note.getPhoneNumber());
-            viewHolder.tv_location.setText(note.getCurrentLocation());
-            viewHolder.tv_nick.setText(note.getNickName());
-            viewHolder.tv_datetime.setText(note.getDatetime());
-            String icon = note.getMyIcon();
+            title = note.getTitle();
+            origin = note.getOrigin();
+            destination = note.getDestination();
+            time = note.getTime();
+            datetime = note.getDatetime();
+            content = note.getContent();
+            currentLocation = note.getCurrentLocation();
+            phoneNumber = note.getPhoneNumber();
+            myIcon = note.getMyIcon();
+            nickName = note.getNickName();
+
+            viewHolder.tv_description.setText(content);
+            viewHolder.tv_title.setText(title);
+            viewHolder.tv_start.setText(origin);
+            viewHolder.tv_end.setText(destination);
+            viewHolder.tv_time.setText(time);
+            viewHolder.tv_phone.setText(phoneNumber);
+            viewHolder.tv_location.setText(currentLocation);
+            viewHolder.tv_nick.setText(nickName);
+            viewHolder.tv_datetime.setText(datetime);
+            String icon = myIcon;
             switch (icon) {
 
                 case "icon1":
@@ -139,6 +150,8 @@ public class DisplayAdapter extends BaseAdapter implements View.OnClickListener 
 
                     break;
             }
+
+
         } catch (Exception e) {
             Log.e("EEE", e.getMessage().toString());
         }
@@ -156,15 +169,16 @@ public class DisplayAdapter extends BaseAdapter implements View.OnClickListener 
 
         switch (v.getId()) {
             case R.id.btn_call:
-                Intent i = new Intent(Intent.ACTION_DIAL);
-                int position = (Integer) v.getTag();
-                Note note = mList.get(position);
-                String phone = note.getPhoneNumber();
-                if (phone != null && !TextUtils.isEmpty(phone)) {
-                    i.setData(Uri.parse("tel:" + phone));
-                    mContext.startActivity(i);
-                }
-
+                try {
+                    Intent i = new Intent(Intent.ACTION_DIAL);
+                    int position = (Integer) v.getTag();
+                    Note note = mList.get(position);
+                    String phone = note.getPhoneNumber();
+                    if (phone != null && !TextUtils.isEmpty(phone)) {
+                        i.setData(Uri.parse("tel:" + phone));
+                        mContext.startActivity(i);
+                    }
+                }catch (Exception e){}
                 break;
         }
     }

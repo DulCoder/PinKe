@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.fafu.kongshu.zhengxianyou.pinke.DisplayActivity;
 import com.fafu.kongshu.zhengxianyou.pinke.R;
+import com.fafu.kongshu.zhengxianyou.pinke.adapter.DatabaseAdapter;
 import com.fafu.kongshu.zhengxianyou.pinke.bean.Note;
 import com.fafu.kongshu.zhengxianyou.pinke.config.Config;
 import com.fafu.kongshu.zhengxianyou.pinke.utils.Utils;
@@ -38,6 +39,7 @@ public class MyDetailFragment extends Fragment implements View.OnClickListener {
     private String objectId;
     private Button btn_save, btn_cancel;
     private DisplayActivity mDisplayActivity;
+    private DatabaseAdapter mDatabaseAdapter;
 
     /**
      * 返回创建fragment实例
@@ -66,6 +68,7 @@ public class MyDetailFragment extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.fragment_detail_my, container, false);
         displayActivity.setHandler(0);
+        mDatabaseAdapter = new DatabaseAdapter(mDisplayActivity);
 
         initView();
         return mView;
@@ -116,7 +119,7 @@ public class MyDetailFragment extends Fragment implements View.OnClickListener {
             case R.id.btn_save:
 
                 if (!TextUtils.isEmpty(description) && !TextUtils.isEmpty(start) && !TextUtils.isEmpty(end) && !TextUtils.isEmpty(time) && phone.length() == 11) {
-                    Note note = new Note();
+                    final Note note = new Note();
                     note.setTitle(tv_title.getText().toString());
                     note.setOrigin(et_start.getText().toString());
                     note.setDestination(et_end.getText().toString());
@@ -124,9 +127,9 @@ public class MyDetailFragment extends Fragment implements View.OnClickListener {
                     note.setTime(et_time.getText().toString());
                     note.setPhoneNumber(et_phone.getText().toString());
                     note.setCurrentLocation(currentLocation);
+//                    note.setNoteId(objectId);
                     note.setLatitude(latitude);
                     note.setLongitude(longitude);
-
 
                     note.update(objectId, new UpdateListener() {
 
@@ -134,7 +137,9 @@ public class MyDetailFragment extends Fragment implements View.OnClickListener {
                         public void done(BmobException e) {
 
                             if (e != null) {
-                                Config.setMyContentFragmentView(null);
+//                                mDatabaseAdapter.rawUpdate(note);
+                                mDatabaseAdapter.update(note,objectId);
+                                Config.setIsRefresh(true);
                                 goBack();
                             } else {
                                 String s = String.valueOf(e.getErrorCode());

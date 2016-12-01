@@ -7,12 +7,12 @@
     android:orientation="vertical"
     >
 
-    <RelativeLayout
+    <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        ></RelativeLayout>
+        ></FrameLayout>
 
     <LinearLayout
         android:id="@+id/ll_btn"

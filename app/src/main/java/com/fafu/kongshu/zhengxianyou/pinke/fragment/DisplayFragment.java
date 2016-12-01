@@ -3,7 +3,10 @@ package com.fafu.kongshu.zhengxianyou.pinke.fragment;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,9 +23,11 @@ import android.widget.TextView;
 
 import com.fafu.kongshu.zhengxianyou.pinke.DisplayActivity;
 import com.fafu.kongshu.zhengxianyou.pinke.R;
+import com.fafu.kongshu.zhengxianyou.pinke.adapter.DatabaseAdapter;
 import com.fafu.kongshu.zhengxianyou.pinke.adapter.DisplayAdapter;
 import com.fafu.kongshu.zhengxianyou.pinke.bean.Note;
 import com.fafu.kongshu.zhengxianyou.pinke.config.Config;
+import com.fafu.kongshu.zhengxianyou.pinke.sqlitedb.NoteMeteData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +42,7 @@ import cn.bmob.v3.listener.FindListener;
  * 首界面显示的信息
  */
 
-public class DisplayFragment extends Fragment implements View.OnClickListener {
+public class DisplayFragment extends Fragment implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
     private DisplayActivity displayActivity;
 
     private ListView mListView;
@@ -57,8 +62,10 @@ public class DisplayFragment extends Fragment implements View.OnClickListener {
     private PopupWindow morePop;
 
     private int mScreenWidth;
+    private static final int REFRESH_COMPLETE = 0X110;
+    private SwipeRefreshLayout mSwipeLayout;
     private int mScreenHeight;
-    private boolean flag = false;
+    private DatabaseAdapter mDatabaseAdapter;
 
     /**
      * 返回创建fragment实例
@@ -73,6 +80,7 @@ public class DisplayFragment extends Fragment implements View.OnClickListener {
     public void onAttach(Context context) {
         super.onAttach(context);
         displayActivity = (DisplayActivity) context;   //获取上下文对象
+
         Log.e("test", "onAttach");
 
 
@@ -84,11 +92,30 @@ public class DisplayFragment extends Fragment implements View.OnClickListener {
         Log.e("test", "onCreate");
     }
 
+    /**
+     * 异步刷新页面
+     */
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case REFRESH_COMPLETE:
+                    loadData();
+                    mSwipeLayout.setRefreshing(false);
+                    break;
+
+            }
+        }
+    };
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 
         mView = inflater.inflate(R.layout.fragment_display, container, false);
+
+        mDatabaseAdapter = new DatabaseAdapter(displayActivity);
 
         adapter = new DisplayAdapter(displayActivity, notes);
 
@@ -100,11 +127,14 @@ public class DisplayFragment extends Fragment implements View.OnClickListener {
         mScreenWidth = metric.widthPixels;
         mScreenHeight = metric.heightPixels;
 
+
         initView();
         Log.e("test", "createView");
-
-        loadData();
-
+        if (Config.isRefresh()) {
+            loadData();
+        } else {
+            nativeData();
+        }
         return mView;
 
     }
@@ -117,34 +147,11 @@ public class DisplayFragment extends Fragment implements View.OnClickListener {
         mListView = (ListView) mView.findViewById(R.id.display_listView);
         mListView.setClickable(true);
 
-//        mListView的滑动监听
-//        mListView.setOnScrollListener(new AbsListView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(AbsListView view, int scrollState) {
-//                switch (scrollState) {
-//                    // 当不滚动时
-//                    case AbsListView.OnScrollListener.SCROLL_STATE_IDLE:
-//                        // 判断滚动到底部
-//                        if (mListView.getLastVisiblePosition() == (mListView.getCount() - 1)) {
-//
-//                        }
-//                        // 判断滚动到顶部
-//
-//                        if(mListView.getFirstVisiblePosition() == 0){
-//                        }
-//
-//                        break;
-//                }
-//            }
-//
-//            @Override
-//            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//                if (firstVisibleItem + visibleItemCount == totalItemCount && !flag) {
-//                    flag = true;
-//                } else
-//                    flag = false;
-//            }
-//        });
+        mSwipeLayout = (SwipeRefreshLayout) mView.findViewById(R.id.id_swipe_ly);
+
+        mSwipeLayout.setOnRefreshListener(this);
+        mSwipeLayout.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,
+                android.R.color.holo_orange_light, android.R.color.holo_red_light);
 
         layout_action = (RelativeLayout) mView.findViewById(R.id.layout_action);
         layout_all = (LinearLayout) mView.findViewById(R.id.layout_all);
@@ -157,27 +164,55 @@ public class DisplayFragment extends Fragment implements View.OnClickListener {
     }
 
     /**
-     * 加载数据
+     * 网络加载数据
      */
     private void loadData() {
-        BmobQuery<Note> query = new BmobQuery<>();
-        query.setLimit(300);
-        query.order("-updatedAt");
+        try {
+            BmobQuery<Note> query = new BmobQuery<>();
+            query.setLimit(300);
+            query.order("-updatedAt");
 
-        query.findObjects(new FindListener<Note>() {
+            query.findObjects(new FindListener<Note>() {
 
-            @Override
-            public void done(List<Note> list, BmobException e) {
+                @Override
+                public void done(List<Note> list, BmobException e) {
+                    notes.clear();
+                    notes = list;
+                    Config.setList(notes);
 
-                notes = list;
-                Config.setList(notes);
-                adapter = new DisplayAdapter(displayActivity, notes);
-                mListView.setAdapter(adapter);
-            }
+                    //加载前先清空表中数据
+                    mDatabaseAdapter.rawDelete(NoteMeteData.DisplayNoteTable.TABLE_NAME);
+                    //把数据添加到本地数据库
+                    int size = list.size();
+                    for (int i = 0; i < size; i++) {
+                        mDatabaseAdapter.rawAdd(list.get(i), NoteMeteData.DisplayNoteTable.TABLE_NAME);
+                    }
 
-        });
+                    adapter = new DisplayAdapter(displayActivity, notes);
+                    mListView.setAdapter(adapter);
+                }
 
+            });
+            Log.e("test", "loadData");
+        } catch (Exception e) {
+            nativeData();
+        }
+    }
 
+    /**
+     * 本地加载数据
+     */
+    private void nativeData() {
+
+        notes.clear();
+        ArrayList<Note> list = mDatabaseAdapter.rawQueryAll(NoteMeteData.DisplayNoteTable.TABLE_NAME);
+        notes.addAll(list);
+//      String str =  list.get(0).getNickName();
+
+        adapter = new DisplayAdapter(displayActivity, notes);
+        mListView.setAdapter(adapter);
+
+        Log.e("test", "nativeData");
     }
 
     /**
@@ -312,6 +347,12 @@ public class DisplayFragment extends Fragment implements View.OnClickListener {
     public void onResume() {
         super.onResume();
         Config.setIsDisplayFragmentAlive(true);       //设置DisplayFragment状态为激活
+//
+//        //保存该用户是否登录过的信息
+//        Set<String> isCreatedDB = new HashSet<>();
+//        isCreatedDB.add(Config.getNickName());
+//        editor.putStringSet("isCreatedDB",isCreatedDB);
+//        editor.commit();
 
         Log.e("test", "resume");
 
@@ -327,6 +368,7 @@ public class DisplayFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        Config.setIsRefresh(false);
 
         Log.e("test", "onDestroyView");
 
@@ -340,4 +382,8 @@ public class DisplayFragment extends Fragment implements View.OnClickListener {
         Log.e("test", "destroy");
     }
 
+    @Override
+    public void onRefresh() {
+        handler.sendEmptyMessageDelayed(REFRESH_COMPLETE, 2000);
+    }
 }

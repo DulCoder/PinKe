@@ -14,12 +14,14 @@ import cn.bmob.v3.Bmob;
  */
 
 public class PinKeApplication extends Application{
-    public static SharedPreferences sp;
+    public static SharedPreferences  sp;
+    public static  SharedPreferences.Editor editor;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        sp = getSharedPreferences(Constant.SP_NAME,MODE_PRIVATE);
+         sp = getSharedPreferences(Constant.SP_NAME,MODE_PRIVATE);
+         editor = sp.edit();
         Bmob.initialize(this, Constant.Bmob_APPID);
         SDKInitializer.initialize(getApplicationContext());
         AMapLocationClient.setApiKey(Constant.GAODE_KEY);

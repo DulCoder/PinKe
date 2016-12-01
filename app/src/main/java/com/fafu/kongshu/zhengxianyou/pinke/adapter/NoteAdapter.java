@@ -48,7 +48,7 @@ public class NoteAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder viewHolder;
-//        if (convertView == null){
+        if (convertView == null){
         convertView = LayoutInflater.from(mContext).inflate(R.layout.note_item_list, parent, false);
         viewHolder = new ViewHolder();
         viewHolder.tv_title = (TextView) convertView.findViewById(R.id.tv_title);
@@ -66,13 +66,13 @@ public class NoteAdapter extends BaseAdapter {
         viewHolder.tv_nick = (TextView) convertView.findViewById(R.id.tv_nick);
         viewHolder.tv_datetime = (TextView) convertView.findViewById(R.id.tv_datetime);
 
-//            convertView.setTag(viewHolder);
+            convertView.setTag(viewHolder);
 
-//        }
-//        viewHolder = (ViewHolder) convertView.getTag();
+        }
+        viewHolder = (ViewHolder) convertView.getTag();
         try {
         Note note = mList.get(position);
-        convertView.setTag(note.getObjectId());
+//        convertView.setTag(note.getObjectId());
         viewHolder.tv_title.setText(note.getTitle());
         viewHolder.tv_start.setText(note.getOrigin());
         viewHolder.tv_end.setText(note.getDestination());

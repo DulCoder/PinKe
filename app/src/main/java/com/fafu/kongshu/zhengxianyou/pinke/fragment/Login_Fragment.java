@@ -2,7 +2,6 @@ package com.fafu.kongshu.zhengxianyou.pinke.fragment;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -24,6 +23,8 @@ import com.fafu.kongshu.zhengxianyou.pinke.bean.MyUser;
 
 import cn.bmob.v3.exception.BmobException;
 import cn.bmob.v3.listener.SaveListener;
+
+import static com.fafu.kongshu.zhengxianyou.pinke.PinKeApplication.editor;
 
 /**
  * Created by zhengxianyou on 2016/10/29.
@@ -170,18 +171,18 @@ public class Login_Fragment extends Fragment implements View.OnClickListener {
             public void done(MyUser myUser, BmobException e) {
                 try {
                     if (e == null) {
-                        SharedPreferences sp = PinKeApplication.sp;
-                        SharedPreferences.Editor editor = sp.edit();
-                        editor.putBoolean("isChecked",cb_choice.isChecked());
+                        PinKeApplication.editor.putBoolean("isChecked",cb_choice.isChecked());
                         if (cb_choice.isChecked()){
                             editor.putString("name",name);
                             editor.putString("password",password);
+                            editor.commit();
                         }
-                        editor.commit();
                        String icon =  myUser.getMyIcon();
                         String nickName = myUser.getNickName();
-                        Log.e("AAA",icon+nickName);
+
+//                        Log.e("AAA",icon+nickName);
                         Intent intent = new Intent(mRing_upActivity, DisplayActivity.class);
+                        intent.putExtra("name",name);
                         intent.putExtra("icon",icon);
                         intent.putExtra("nickName",nickName);
                         startActivity(intent);
@@ -192,7 +193,6 @@ public class Login_Fragment extends Fragment implements View.OnClickListener {
 
                 } catch (Exception exception) {
                     Log.e("err", exception.getMessage() + "");
-                    startActivity(new Intent(mRing_upActivity, DisplayActivity.class));
                     toast("正在登录");
                 }
             }

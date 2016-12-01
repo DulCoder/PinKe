@@ -8,8 +8,9 @@ import cn.bmob.v3.BmobObject;
 
 public class Note extends BmobObject {
     private String title;                     //标题
-    private String origin;                    //起点
-    private String destination;               //目的地
+    private String noteId;                    //id
+    private String origin;                    //起点   /start
+    private String destination;               //目的地 /end
     private String time;                      //出发时间
     private String datetime;                  //发布时时间
     private String content;                   //内容
@@ -20,6 +21,30 @@ public class Note extends BmobObject {
     private String nickName;                  //昵称
     private Double mLatitude;                 //纬度
     private Double mLongitude;                //经度
+
+    public Note() {
+    }
+
+    public Note(String title, String origin, String destination, String time, String datetime, String content, String phoneNumber, String currentLocation, String myIcon, String nickName) {
+        this.title = title;
+        this.origin = origin;
+        this.destination = destination;
+        this.time = time;
+        this.datetime = datetime;
+        this.content = content;
+        this.phoneNumber = phoneNumber;
+        this.currentLocation = currentLocation;
+        this.myIcon = myIcon;
+        this.nickName = nickName;
+    }
+
+    public String getNoteId() {
+        return noteId;
+    }
+
+    public void setNoteId(String noteId) {
+        this.noteId = noteId;
+    }
 
     public Double getLatitude() {
         return mLatitude;
