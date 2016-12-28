@@ -13,6 +13,7 @@ import android.widget.Button;
 
 import com.fafu.kongshu.zhengxianyou.pinke.R;
 import com.fafu.kongshu.zhengxianyou.pinke.config.Config;
+import com.fafu.kongshu.zhengxianyou.pinke.utils.Utils;
 
 /**
  * Created by zhengxianyou on 2016/11/9.
@@ -106,39 +107,39 @@ public class IconDialogFragment extends DialogFragment implements View.OnClickLi
             case R.id.icon_1:
 
                Config.setMyIcon("icon1");
-
+                Utils.toast(getActivity(),"已选中icon1");
                 break;
             case R.id.icon_2:
                 Config.setMyIcon("icon2");
-
+                Utils.toast(getActivity(),"已选中icon2");
                 break;
             case R.id.icon_3:
                 Config.setMyIcon("icon3");
-
+                Utils.toast(getActivity(),"已选中icon3");
                 break;
             case R.id.icon_4:
                 Config.setMyIcon("icon4");
-
+                Utils.toast(getActivity(),"已选中icon4");
                 break;
             case R.id.icon_5:
                 Config.setMyIcon("icon5");
-
+                Utils.toast(getActivity(),"已选中icon5");
                 break;
             case R.id.icon_6:
                 Config.setMyIcon("icon6");
-
+                Utils.toast(getActivity(),"已选中icon6");
                 break;
             case R.id.icon_7:
                 Config.setMyIcon("icon7");
-
+                Utils.toast(getActivity(),"已选中icon7");
                 break;
             case R.id.icon_8:
                 Config.setMyIcon("icon8");
-
+                Utils.toast(getActivity(),"已选中icon8");
                 break;
             case R.id.icon_9:
                 Config.setMyIcon("icon9");
-
+                Utils.toast(getActivity(),"已选中icon9");
                 break;
             default:
                 break;

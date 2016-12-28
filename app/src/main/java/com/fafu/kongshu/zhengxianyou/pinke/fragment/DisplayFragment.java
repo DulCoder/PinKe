@@ -1,6 +1,7 @@
 package com.fafu.kongshu.zhengxianyou.pinke.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,6 +22,7 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.fafu.kongshu.zhengxianyou.pinke.AddActivity;
 import com.fafu.kongshu.zhengxianyou.pinke.DisplayActivity;
 import com.fafu.kongshu.zhengxianyou.pinke.R;
 import com.fafu.kongshu.zhengxianyou.pinke.adapter.DatabaseAdapter;
@@ -226,7 +228,7 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
                 break;
 
             case R.id.btn_add:                     //跳转到添加界面
-                inflateAddFragment();
+                inflateAddActivity();
                 break;
 
             case R.id.btn_fare:                    //筛选已有车需要找拼友的信息
@@ -294,12 +296,13 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
     /**
      * 跳转到添加信息界面
      */
-    private void inflateAddFragment() {
-        getFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, AddFragment.newInstance())
-                .addToBackStack(null)
-                .commit();
+    private void inflateAddActivity() {
+//        getFragmentManager()
+//                .beginTransaction()
+//                .replace(R.id.fragment_container, AddFragment.newInstance())
+//                .addToBackStack(null)
+//                .commit();
+        startActivity(new Intent(displayActivity, AddActivity.class));
     }
 
     /**
@@ -382,6 +385,8 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
         Log.e("test", "destroy");
     }
 
+
+    //下拉刷新
     @Override
     public void onRefresh() {
         handler.sendEmptyMessageDelayed(REFRESH_COMPLETE, 2000);

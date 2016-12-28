@@ -1,21 +1,16 @@
-package com.fafu.kongshu.zhengxianyou.pinke.fragment;
+package com.fafu.kongshu.zhengxianyou.pinke;
 
-import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-import com.fafu.kongshu.zhengxianyou.pinke.DisplayActivity;
-import com.fafu.kongshu.zhengxianyou.pinke.R;
 import com.fafu.kongshu.zhengxianyou.pinke.adapter.DatabaseAdapter;
 import com.fafu.kongshu.zhengxianyou.pinke.bean.MyUser;
 import com.fafu.kongshu.zhengxianyou.pinke.bean.Note;
@@ -30,15 +25,7 @@ import cn.bmob.v3.BmobUser;
 import cn.bmob.v3.exception.BmobException;
 import cn.bmob.v3.listener.SaveListener;
 
-/**
- * Created by zhengxianyou on 2016/10/31.
- * 添加新的数据
- */
-
-public class AddFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemSelectedListener {
-    private View mView;
-    private DisplayActivity displayActivity;
-
+public class AddActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
     private Spinner mSpinner;
     private static final String[] item_spinner = {"Search Car", "Search Fare"};
     private ArrayAdapter<String> mAdapter;
@@ -47,45 +34,29 @@ public class AddFragment extends Fragment implements View.OnClickListener, Adapt
     private String choice;
     private String currentLocation;
     private Double latitude, longitude;
-    private static DisplayActivity sMDisplayActivity = new DisplayActivity();
     private DatabaseAdapter mDatabaseAdapter;
 
-    /**
-     * 返回创建fragment实例
-     */
-    public static AddFragment newInstance() {
-        AddFragment addFragment = new AddFragment();
-        return addFragment;
-    }
-
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        displayActivity = (DisplayActivity) context;   //获取上下文对象
-    }
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_add);
+        mDatabaseAdapter = new DatabaseAdapter(this);
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = inflater.inflate(R.layout.fragment_add, container, false);
-        mDatabaseAdapter = new DatabaseAdapter(displayActivity);
-
-        sMDisplayActivity.setHandler(0);           //更改宿主Activity的UI，隐藏底部导航栏
         currentLocation = Config.getTempLocation().toString();
         latitude = Config.getLatitude();
         longitude = Config.getLongitude();
-        Utils.toast(displayActivity, currentLocation);
+        Utils.toast(this, currentLocation);
 
         initView();
-        return mView;
     }
 
     /**
      * 初始化view
      */
     private void initView() {
-        mSpinner = (Spinner) mView.findViewById(R.id.mSpinner);
+        mSpinner = (Spinner) findViewById(R.id.mSpinner);
         //将可选内容与ArrayAdapter连接起来
-        mAdapter = new ArrayAdapter<>(displayActivity, R.layout.item_spinner, item_spinner);
+        mAdapter = new ArrayAdapter<>(this, R.layout.item_spinner, item_spinner);
 
         //设置下拉列表的风格
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -99,17 +70,16 @@ public class AddFragment extends Fragment implements View.OnClickListener, Adapt
         //设置默认值
         mSpinner.setVisibility(View.VISIBLE);
 
-        et_description = (EditText) mView.findViewById(R.id.et_description);
-        et_start = (EditText) mView.findViewById(R.id.et_start);
-        et_end = (EditText) mView.findViewById(R.id.et_end);
-        et_time = (EditText) mView.findViewById(R.id.et_time);
-        et_phone = (EditText) mView.findViewById(R.id.et_phone);
-        btn_save = (Button) mView.findViewById(R.id.btn_save);
+        et_description = (EditText)findViewById(R.id.et_description);
+        et_start = (EditText)findViewById(R.id.et_start);
+        et_end = (EditText)findViewById(R.id.et_end);
+        et_time = (EditText)findViewById(R.id.et_time);
+        et_phone = (EditText)findViewById(R.id.et_phone);
+        btn_save = (Button)findViewById(R.id.btn_save);
         btn_save.setOnClickListener(this);
-        btn_cancel = (Button) mView.findViewById(R.id.btn_cancel);
+        btn_cancel = (Button)findViewById(R.id.btn_cancel);
         btn_cancel.setOnClickListener(this);
     }
-
 
     @Override
     public void onClick(View v) {
@@ -126,6 +96,7 @@ public class AddFragment extends Fragment implements View.OnClickListener, Adapt
 
         }
     }
+
 
     private void save() {
         Date date = new Date();
@@ -156,20 +127,20 @@ public class AddFragment extends Fragment implements View.OnClickListener, Adapt
             note.setLatitude(latitude);
             note.setLongitude(longitude);
             note.setAuthor(user);                             //设置作者字段以便查询
-try {
-    note.save(new SaveListener<String>() {
-        @Override
-        public void done(String s, BmobException e) {
-mDatabaseAdapter.rawAdd(note, NoteMeteData.MyNoteTable.TABLE_NAME);
-            Config.setIsRefresh(true);
-            goBack();
-        }
-    });
-}catch (Exception e){
+            try {
+                note.save(new SaveListener<String>() {
+                    @Override
+                    public void done(String s, BmobException e) {
+                        mDatabaseAdapter.rawAdd(note, NoteMeteData.MyNoteTable.TABLE_NAME);
+                        Config.setIsRefresh(true);
+                        goBack();
+                    }
+                });
+            }catch (Exception e){
 
-}
+            }
         } else {
-            Utils.toast(displayActivity, "请把信息填写完整");
+            Utils.toast(this, "请把信息填写完整");
         }
 
     }
@@ -178,10 +149,7 @@ mDatabaseAdapter.rawAdd(note, NoteMeteData.MyNoteTable.TABLE_NAME);
      * 返回上一界面
      */
     private void goBack() {
-        getFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, DisplayFragment.newInstance(), null)
-                .commit();
+      finish();
     }
 
     @Override
@@ -194,9 +162,5 @@ mDatabaseAdapter.rawAdd(note, NoteMeteData.MyNoteTable.TABLE_NAME);
 
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        displayActivity.setHandler(1);
-    }
+
 }

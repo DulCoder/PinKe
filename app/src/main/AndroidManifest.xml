@@ -22,10 +22,10 @@
         android:allowBackup="true"
         android:icon="@mipmap/launcher"
         android:label="@string/app_name"
+        android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
         <activity android:name=".DisplayActivity">
-
         </activity>
         <activity android:name=".GuideActivity">
         </activity>
@@ -41,9 +41,12 @@
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="QirAipjX39reVm90BYetWGvOtV70tteE" />
-        <service android:name="com.amap.api.location.APSService"></service>
+            android:value="QirAipjX39reVm90BYetWGvOtV70tteE"/>
 
+        <service android:name="com.amap.api.location.APSService"/>
+
+        <activity android:name=".AddActivity">
+        </activity>
     </application>
 
 </manifest>

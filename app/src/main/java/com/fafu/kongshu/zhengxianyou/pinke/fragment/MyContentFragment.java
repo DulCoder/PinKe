@@ -26,6 +26,7 @@ import com.fafu.kongshu.zhengxianyou.pinke.config.Config;
 import com.fafu.kongshu.zhengxianyou.pinke.sqlitedb.NoteMeteData;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import cn.bmob.v3.BmobQuery;
@@ -161,7 +162,6 @@ public class MyContentFragment extends Fragment implements AdapterView.OnItemCli
                 public void done(List<Note> list, BmobException e) {
 
                     notes = list;
-
                     //把数据添加到本地数据库
                     int size = list.size();
                     Note note = null;
@@ -188,6 +188,7 @@ public class MyContentFragment extends Fragment implements AdapterView.OnItemCli
 
         notes.clear();
         ArrayList<Note> list = mDatabaseAdapter.queryAll();
+        Collections.reverse(list);
         notes.addAll(list);
 
         adapter = new NoteAdapter(displayActivity, notes);

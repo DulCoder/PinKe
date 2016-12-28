@@ -98,7 +98,7 @@ public class MyDetailFragment extends Fragment implements View.OnClickListener {
 
 
         objectId = getArguments().getString("objectId");
-        Log.e("CCC", objectId);
+//        Log.e("CCC", objectId);
         tv_title.setText(title);
         et_start.setText(start);
         et_end.setText(end);
