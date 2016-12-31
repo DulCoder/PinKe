@@ -8,6 +8,7 @@
     <color name="transparent">#000000</color>
     <color name="edit">#eeeeee</color>
     <color name="grey">#e0e0e0</color>
+    <color name="dgrey">#9e9e9e</color>
     <color name="item">#fffde7</color>
     <color name="gold">#ffab00</color>
     <color name="button">#03a9f4</color>

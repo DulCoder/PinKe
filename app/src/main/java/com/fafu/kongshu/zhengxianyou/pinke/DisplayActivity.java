@@ -3,9 +3,10 @@ package com.fafu.kongshu.zhengxianyou.pinke;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -18,10 +19,9 @@ import com.fafu.kongshu.zhengxianyou.pinke.fragment.DisplayFragment;
 import com.fafu.kongshu.zhengxianyou.pinke.fragment.MapFragment;
 import com.fafu.kongshu.zhengxianyou.pinke.fragment.MyContentFragment;
 
-public class DisplayActivity extends AppCompatActivity implements View.OnClickListener {
+public class DisplayActivity extends FragmentActivity implements View.OnClickListener {
     private Button btn_all, btn_map, btn_mine;
     public static LinearLayout ll_btn;
-    private DisplayFragment mDisplayFragment = DisplayFragment.newInstance();
     private MyContentFragment mContentFragment = MyContentFragment.newInstance();
 
     //声明AMapLocationClient类对象
@@ -91,6 +91,7 @@ public class DisplayActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_display);
         Config.setIsRefresh(true);                   //设置需要刷新
         Config.setIsDisplayFragmentAlive(true);      //设置DisplayFragment的生命状态为激活
@@ -121,11 +122,11 @@ public class DisplayActivity extends AppCompatActivity implements View.OnClickLi
         String name = getIntent().getStringExtra("name");
         String icon = getIntent().getStringExtra("icon");
         String nickName = getIntent().getStringExtra("nickName");
-        Config.setName(name);
+        Config.setName(name);     //用户名
         Config.setMyIcon(icon);
         Config.setNickName(nickName);
 
-
+//new LoginActivity().finish();
 
         addFragment();
         initView();
@@ -143,7 +144,7 @@ public class DisplayActivity extends AppCompatActivity implements View.OnClickLi
     private void addFragment() {
         getSupportFragmentManager()
                 .beginTransaction()
-                .add(R.id.fragment_container, mDisplayFragment, null)
+                .add(R.id.fragment_container, DisplayFragment.newInstance())
                 .commit();
     }
 
@@ -198,7 +199,6 @@ public class DisplayActivity extends AppCompatActivity implements View.OnClickLi
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragment_container, MapFragment.newInstance(), null)
-//                .addToBackStack(null)
                     .commit();
         }
     }
@@ -210,7 +210,7 @@ public class DisplayActivity extends AppCompatActivity implements View.OnClickLi
         if (!Config.isDisplayFragmentAlive()) {       //如果当前界面就是DisplayFragment则点击无效否则有效
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragment_container, new DisplayFragment(), null)
+                    .replace(R.id.fragment_container, DisplayFragment.newInstance(), null)
                     .commit();
         }
     }

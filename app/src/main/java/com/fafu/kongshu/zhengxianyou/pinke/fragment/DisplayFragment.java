@@ -2,7 +2,6 @@ package com.fafu.kongshu.zhengxianyou.pinke.fragment;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -15,12 +14,17 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fafu.kongshu.zhengxianyou.pinke.AddActivity;
 import com.fafu.kongshu.zhengxianyou.pinke.DisplayActivity;
@@ -30,6 +34,8 @@ import com.fafu.kongshu.zhengxianyou.pinke.adapter.DisplayAdapter;
 import com.fafu.kongshu.zhengxianyou.pinke.bean.Note;
 import com.fafu.kongshu.zhengxianyou.pinke.config.Config;
 import com.fafu.kongshu.zhengxianyou.pinke.sqlitedb.NoteMeteData;
+import com.fafu.kongshu.zhengxianyou.pinke.view.DragLayout;
+import com.nineoldandroids.view.ViewHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,24 +44,27 @@ import cn.bmob.v3.BmobQuery;
 import cn.bmob.v3.exception.BmobException;
 import cn.bmob.v3.listener.FindListener;
 
-
 /**
- * Created by zhengxianyou on 2016/10/30.
- * 首界面显示的信息
+ * Created by zhengxianyou on 2016/12/31.
  */
 
 public class DisplayFragment extends Fragment implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
+
+    private View view;
+    private DragLayout dl;
+    private ListView lv;
+    private ImageView iv_icon, iv_bottom;
+
     private DisplayActivity displayActivity;
 
     private ListView mListView;
     private List<Note> notes = new ArrayList<>();
     private DisplayAdapter adapter;
 
-    private View mView;
-
     private RelativeLayout layout_action;
     private LinearLayout layout_all;
     private TextView tv_car;
+    private TextView my_id;
     private Button btn_add;
 
     private Button btn_search_all;
@@ -65,17 +74,19 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
 
     private int mScreenWidth;
     private static final int REFRESH_COMPLETE = 0X110;
+    private static final int CHOOSE_ICON = 0X111;
+    private static final int DISPLAY_DATA = 0X112;
     private SwipeRefreshLayout mSwipeLayout;
     private int mScreenHeight;
     private DatabaseAdapter mDatabaseAdapter;
 
-    /**
-     * 返回创建fragment实例
-     */
+
+
     public static DisplayFragment newInstance() {
 
-        DisplayFragment displayFragment = new DisplayFragment();
-        return displayFragment;
+        DisplayFragment fragment = new DisplayFragment();
+
+        return fragment;
     }
 
     @Override
@@ -86,12 +97,6 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
         Log.e("test", "onAttach");
 
 
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.e("test", "onCreate");
     }
 
     /**
@@ -106,6 +111,13 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
                     loadData();
                     mSwipeLayout.setRefreshing(false);
                     break;
+                case CHOOSE_ICON:
+                    ChooseIcon();            //更新头像
+
+                    break;
+                case DISPLAY_DATA:
+
+                    break;
 
             }
         }
@@ -113,9 +125,7 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-
-        mView = inflater.inflate(R.layout.fragment_display, container, false);
+        view = inflater.inflate(R.layout.fragment_display,container,false);
 
         mDatabaseAdapter = new DatabaseAdapter(displayActivity);
 
@@ -129,40 +139,155 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
         mScreenWidth = metric.widthPixels;
         mScreenHeight = metric.heightPixels;
 
-
+        initDragLayout();
         initView();
+
         Log.e("test", "createView");
         if (Config.isRefresh()) {
-            loadData();
+            new Thread(runnable).start();
         } else {
             nativeData();
         }
-        return mView;
+
+        return view;
+    }
+
+    private void initDragLayout() {
+        dl = (DragLayout) view.findViewById(R.id.dl);
+        dl.setDragListener(new DragLayout.DragListener() {
+            @Override
+            public void onOpen() {
+//                lv.smoothScrollToPosition(new Random().nextInt(30));
+            }
+
+            @Override
+            public void onClose() {
+                shake();
+            }
+
+            @Override
+            public void onDrag(float percent) {
+                ViewHelper.setAlpha(iv_icon, 1 - percent);
+            }
+        });
+    }
+
+    /**
+     * 初始化View
+     */
+    private void initView() {
+        iv_icon = (ImageView) view.findViewById(R.id.iv_icon);
+        iv_bottom = (ImageView) view.findViewById(R.id.iv_bottom);
+        lv = (ListView) view.findViewById(R.id.lv);
+        lv.setAdapter(new ArrayAdapter<>(getActivity(),
+                R.layout.item_text, new String[] {"更换头像","更改昵称","修改密码"}));
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1,
+                                    int position, long arg3) {
+                Toast.makeText(getActivity(), "此功能待加入...",Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        handler.sendEmptyMessage(CHOOSE_ICON);      //更新头像
+
+        my_id = (TextView) view.findViewById(R.id.my_id);
+        my_id.setText(Config.getNickName());
+
+        mListView = (ListView) view.findViewById(R.id.display_listView);
+        mListView.setClickable(true);
+
+        mSwipeLayout = (SwipeRefreshLayout) view.findViewById(R.id.id_swipe_ly);
+
+        mSwipeLayout.setOnRefreshListener(this);       //下拉刷新
+        mSwipeLayout.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,
+                android.R.color.holo_orange_light, android.R.color.holo_red_light);
+
+        layout_action = (RelativeLayout) view.findViewById(R.id.layout_action);
+        layout_all = (LinearLayout) view.findViewById(R.id.layout_all);
+        // 默认是加载全部信息
+        tv_car = (TextView) view.findViewById(R.id.tv_car);
+        btn_add = (Button) view.findViewById(R.id.btn_add);
+
+        btn_add.setOnClickListener(this);
+        layout_all.setOnClickListener(this);
 
     }
 
 
+
     /**
-     * 初始化view
+     * 选择头像
      */
-    private void initView() {
-        mListView = (ListView) mView.findViewById(R.id.display_listView);
-        mListView.setClickable(true);
+    private void ChooseIcon() {
 
-        mSwipeLayout = (SwipeRefreshLayout) mView.findViewById(R.id.id_swipe_ly);
+        String icon = Config.getMyIcon();
+        switch (icon) {
 
-        mSwipeLayout.setOnRefreshListener(this);
-        mSwipeLayout.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,
-                android.R.color.holo_orange_light, android.R.color.holo_red_light);
+            case "icon1":
+                iv_icon.setImageResource(R.drawable.icon1);
+                iv_bottom.setImageResource(R.drawable.icon1);
 
-        layout_action = (RelativeLayout) mView.findViewById(R.id.layout_action);
-        layout_all = (LinearLayout) mView.findViewById(R.id.layout_all);
-        // 默认是加载全部信息
-        tv_car = (TextView) mView.findViewById(R.id.tv_car);
-        btn_add = (Button) mView.findViewById(R.id.btn_add);
+                break;
 
-        btn_add.setOnClickListener(this);
-        layout_all.setOnClickListener(this);
+            case "icon2":
+                iv_icon.setImageResource(R.drawable.icon2);
+                iv_bottom.setImageResource(R.drawable.icon2);
+
+                break;
+
+            case "icon3":
+                iv_icon.setImageResource(R.drawable.icon3);
+                iv_bottom.setImageResource(R.drawable.icon3);
+
+                break;
+
+            case "icon4":
+                iv_icon.setImageResource(R.drawable.icon4);
+                iv_bottom.setImageResource(R.drawable.icon4);
+
+                break;
+
+            case "icon5":
+                iv_icon.setImageResource(R.drawable.icon5);
+                iv_bottom.setImageResource(R.drawable.icon5);
+
+                break;
+
+            case "icon6":
+                iv_icon.setImageResource(R.drawable.icon6);
+                iv_bottom.setImageResource(R.drawable.icon6);
+
+                break;
+
+            case "icon7":
+                iv_icon.setImageResource(R.drawable.icon7);
+                iv_bottom.setImageResource(R.drawable.icon7);
+
+                break;
+
+            case "icon8":
+                iv_icon.setImageResource(R.drawable.icon8);
+                iv_bottom.setImageResource(R.drawable.icon8);
+
+                break;
+
+            case "icon9":
+                iv_icon.setImageResource(R.drawable.icon9);
+                iv_bottom.setImageResource(R.drawable.icon9);
+
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /**
+     * 返回时头像左右摇动
+     */
+    private void shake() {
+        iv_icon.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.shake));
     }
 
     /**
@@ -180,18 +305,20 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
                 public void done(List<Note> list, BmobException e) {
                     notes.clear();
                     notes = list;
-                    Config.setList(notes);
+                    Config.setList(notes);     //添加地图界面的marker
+
+
+                    adapter = new DisplayAdapter(displayActivity, notes);
+                    mListView.setAdapter(adapter);
 
                     //加载前先清空表中数据
                     mDatabaseAdapter.rawDelete(NoteMeteData.DisplayNoteTable.TABLE_NAME);
                     //把数据添加到本地数据库
-                    int size = list.size();
+                    int size = notes.size();
                     for (int i = 0; i < size; i++) {
-                        mDatabaseAdapter.rawAdd(list.get(i), NoteMeteData.DisplayNoteTable.TABLE_NAME);
+                        mDatabaseAdapter.rawAdd(notes.get(i), NoteMeteData.DisplayNoteTable.TABLE_NAME);
                     }
 
-                    adapter = new DisplayAdapter(displayActivity, notes);
-                    mListView.setAdapter(adapter);
                 }
 
             });
@@ -201,6 +328,14 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
         }
     }
 
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+           loadData();
+
+        }
+    };
+
     /**
      * 本地加载数据
      */
@@ -209,7 +344,6 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
         notes.clear();
         ArrayList<Note> list = mDatabaseAdapter.rawQueryAll(NoteMeteData.DisplayNoteTable.TABLE_NAME);
         notes.addAll(list);
-//      String str =  list.get(0).getNickName();
 
         adapter = new DisplayAdapter(displayActivity, notes);
         mListView.setAdapter(adapter);
@@ -297,11 +431,7 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
      * 跳转到添加信息界面
      */
     private void inflateAddActivity() {
-//        getFragmentManager()
-//                .beginTransaction()
-//                .replace(R.id.fragment_container, AddFragment.newInstance())
-//                .addToBackStack(null)
-//                .commit();
+
         startActivity(new Intent(displayActivity, AddActivity.class));
     }
 
@@ -309,7 +439,7 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
      * 展开下拉列表
      */
     private void showListPop() {
-        View view = LayoutInflater.from(displayActivity).inflate(R.layout.pop_search, null);
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.pop_search, null);
         // 注入
         btn_search_all = (Button) view.findViewById(R.id.btn_search_all);
         btn_fare = (Button) view.findViewById(R.id.btn_fare);
@@ -330,17 +460,30 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
             }
         });
 
+        view.setOnTouchListener(new View.OnTouchListener()// 需要设置，点击之后取消popupview，即使点击外面，也可以捕获事件
+        {
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                if (morePop.isShowing())
+                {
+                    morePop.dismiss();
+                }
+                return false;
+            }
+        });
+
         morePop.setWidth(WindowManager.LayoutParams.MATCH_PARENT);
         morePop.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
         morePop.setTouchable(true);
         morePop.setFocusable(true);
         morePop.setOutsideTouchable(true);
-        morePop.setBackgroundDrawable(new BitmapDrawable());
+//        morePop.setBackgroundDrawable(new BitmapDrawable());
         // 动画效果 从顶部弹下
         morePop.setAnimationStyle(R.style.MenuPop);
         float scale = displayActivity.getResources().getDisplayMetrics().density;
         int dip2px = (int) (scale * 2.0F + 0.5f);
         morePop.showAsDropDown(layout_action, 0, dip2px);
+
     }
 
     /**
@@ -350,12 +493,6 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
     public void onResume() {
         super.onResume();
         Config.setIsDisplayFragmentAlive(true);       //设置DisplayFragment状态为激活
-//
-//        //保存该用户是否登录过的信息
-//        Set<String> isCreatedDB = new HashSet<>();
-//        isCreatedDB.add(Config.getNickName());
-//        editor.putStringSet("isCreatedDB",isCreatedDB);
-//        editor.commit();
 
         Log.e("test", "resume");
 
@@ -391,4 +528,5 @@ public class DisplayFragment extends Fragment implements View.OnClickListener, S
     public void onRefresh() {
         handler.sendEmptyMessageDelayed(REFRESH_COMPLETE, 2000);
     }
+
 }

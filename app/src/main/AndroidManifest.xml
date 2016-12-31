@@ -25,7 +25,10 @@
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".DisplayActivity">
+        <activity
+            android:name=".DisplayActivity"
+            android:theme="@style/Transparent"
+            android:launchMode="singleTask">
         </activity>
         <activity android:name=".GuideActivity">
         </activity>
@@ -45,8 +48,11 @@
 
         <service android:name="com.amap.api.location.APSService"/>
 
-        <activity android:name=".AddActivity">
+        <activity
+            android:name=".AddActivity"
+            android:launchMode="singleTask">
         </activity>
+
     </application>
 
 </manifest>

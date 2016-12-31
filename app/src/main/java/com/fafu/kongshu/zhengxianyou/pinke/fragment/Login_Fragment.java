@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +39,7 @@ public class Login_Fragment extends Fragment implements View.OnClickListener {
     private TextView tv_forget;
     private LoginActivity mRing_upActivity;
     private CheckBox cb_choice;
+    private RelativeLayout rl_login;
 
     /**
      *返回创建fragment实例
@@ -104,6 +106,8 @@ public class Login_Fragment extends Fragment implements View.OnClickListener {
                 }
             }
         });
+
+        rl_login = (RelativeLayout) v.findViewById(R.id.rl_login);
 
     }
 
@@ -180,7 +184,8 @@ public class Login_Fragment extends Fragment implements View.OnClickListener {
                        String icon =  myUser.getMyIcon();
                         String nickName = myUser.getNickName();
 
-//                        Log.e("AAA",icon+nickName);
+                        rl_login.setVisibility(View.VISIBLE);
+
                         Intent intent = new Intent(mRing_upActivity, DisplayActivity.class);
                         intent.putExtra("name",name);
                         intent.putExtra("icon",icon);

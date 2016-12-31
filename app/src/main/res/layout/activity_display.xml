@@ -17,7 +17,7 @@
     <LinearLayout
         android:id="@+id/ll_btn"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:background="@color/base_actionbar_bg">
 
         <Button
@@ -25,6 +25,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_gravity="center"
+
             android:textColor="@color/colorAccent"
             android:background="@color/base_actionbar_bg"
             android:text="发现"/>
@@ -32,6 +34,8 @@
             android:id="@+id/btn_map"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+
             android:layout_weight="1"
             android:textColor="@color/white"
             android:background="@color/base_actionbar_bg"
@@ -41,6 +45,9 @@
             android:id="@+id/btn_mine"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
+
+
             android:layout_weight="1"
             android:textColor="@color/white"
             android:background="@color/base_actionbar_bg"

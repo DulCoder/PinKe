@@ -34,6 +34,11 @@
         <item name="android:textColor">@color/base_color_text_black</item>
     </style>
 
+    <style name="Transparent" parent="android:style/Theme.Black.NoTitleBar">
+        <!--将Activity的Theme设置成透明-->
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
     <style name="MenuPop" parent="@android:style/Animation">
         <item name="android:windowEnterAnimation">@anim/scale_top_in</item>
         <item name="android:windowExitAnimation">@anim/scale_top_out</item>

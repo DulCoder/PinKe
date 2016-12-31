@@ -15,7 +15,7 @@ public class Config {
     private static boolean isMyContentFragmentAlive;                 //判断MyContentFragment是否存活
     private static boolean isMapFragmentAlive;                       //判断MapFragment是否存活
     private static boolean isRefresh;                                //判断是否需要刷新
-    private static String name;                                       //保存昵用户名
+    private static String name;                                       //保存用户名
     private static String nickName;                                  //保存昵称
     private static String myIcon;                                    //保存头像信息
     private static String tempLocation;                              //临时存储位置
