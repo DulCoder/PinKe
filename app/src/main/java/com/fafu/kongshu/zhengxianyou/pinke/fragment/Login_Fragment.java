@@ -154,6 +154,7 @@ public class Login_Fragment extends Fragment implements View.OnClickListener {
         getFragmentManager()
                 .beginTransaction()
                 .replace(R.id.activity_ring_up_container, Register_Fragment.newInstance())
+                .addToBackStack(null)
                 .commit();
     }
 

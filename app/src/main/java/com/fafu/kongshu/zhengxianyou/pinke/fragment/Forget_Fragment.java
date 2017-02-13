@@ -50,7 +50,7 @@ public class Forget_Fragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_find:
-                findPasswor();
+                findPassword();
                 break;
         }
     }
@@ -58,7 +58,7 @@ public class Forget_Fragment extends Fragment implements View.OnClickListener {
     /**
      * 找回密码相关逻辑
      */
-    private void findPasswor() {
+    private void findPassword() {
         email = et_find.getText().toString();
         if (TextUtils.isEmpty(email) | !email.contains("@")) {  //判断邮箱格式是否正确
             toast("邮箱输入错误");
